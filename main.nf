@@ -1,10 +1,5 @@
 #!/usr/bin/env nextflow
 
-params.in = "$baseDir/fastq/*{1,2}.fastq.gz"
-params.out = "$HOME/test"
-params.abrdb = "$baseDir/db/ARGannot/ARGannot_r3.fasta"
-params.adapters = "$baseDir/db/adapters/adapters.fa"
-params.sizefilter = 3000
 
 Channel.fromFilePairs( params.in ).into { fastq_files; fastq_files2; fastq_files3 }
 abr_ref = file(params.abrdb)
@@ -12,7 +7,6 @@ adapters = file(params.adapters)
 
 process fastqc {
     
-    conda 'fastqc'
     errorStrategy 'ignore'
     publishDir params.out, pattern: "*.html", mode: 'copy', overwrite: true
 
@@ -31,7 +25,6 @@ process fastqc {
 
 process multiqc {
 
-    conda 'multiqc'
     errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
@@ -48,8 +41,8 @@ process multiqc {
 
 process srst2 {
 
-    conda 'srst2'
     errorStrategy 'ignore'
+    //maxForks 1
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
@@ -65,7 +58,6 @@ process srst2 {
 
 process adapter_trimming {
 
-    conda 'bbmap'
     errorStrategy 'ignore'
     //publishDir params.out, mode: 'copy', overwrite: true
 
@@ -82,8 +74,6 @@ process adapter_trimming {
 
 process assembly {
 
-    conda 'spades'
-    memory '6 GB'
     errorStrategy 'ignore'
     //publishDir params.out, mode: 'copy', overwrite: true
 
@@ -94,14 +84,13 @@ process assembly {
     tuple val(name), path("*_scaffolds.fasta") into assembly_output
 
     """
-    spades.py -1 ${fastq[0]} -2 ${fastq[1]} -o ${name} -m 6
+    spades.py -1 ${fastq[0]} -2 ${fastq[1]} -o ${name} -m 6 -t 1
     cp ${name}/scaffolds.fasta ${name}_scaffolds.fasta
     """
 }
 
 process assembly_size_filter {
 
-    conda 'bbmap'
     errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
@@ -118,7 +107,6 @@ process assembly_size_filter {
 
 process prokka {
 
-    conda 'prokka'
     errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
@@ -137,7 +125,6 @@ process prokka {
 
 process quast {
 
-    conda 'quast'
     errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
