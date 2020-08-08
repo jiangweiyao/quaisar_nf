@@ -10,7 +10,7 @@ params.thread = 1
 
 process fastqc {
     
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     publishDir params.out, pattern: "*.html", mode: 'copy', overwrite: true
 
     input:
@@ -24,11 +24,9 @@ process fastqc {
     """
 }
 
-//qc_files1.collect().print()
-
 process multiqc {
 
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
@@ -42,20 +40,38 @@ process multiqc {
     """
 }
 
-process srst2 {
+process kma_index {
 
-    errorStrategy 'ignore'
-    //maxForks 1
+    //errorStrategy 'ignore'
+    publishDir params.out, overwrite: true
+
+    output:
+    path "abr*" into kma_index_out
+
+    """
+    kma index -i ${abr_ref} -o abr
+    """
+}
+
+//kma_index_out.print()
+
+process kma_map {
+
+    //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
+    path index from kma_index_out
     tuple val(name), file(fastq) from fastq_files2
 
     output:
-    path "*results.txt" into srst2_output
+    path "*_abr*" into kma_out
+
+    //kma -i ${fastq[0]} -ipe ${fastq[1]} -o ${name}_abr.out -t_db abr -1t1
+
 
     """
-    srst2 --input_pe ${fastq} --output ${name}_srst2 --log --gene_db ${abr_ref}
+    kma -ipe ${fastq} -o ${name}_abr -t_db abr -1t1
     """
 }
 
@@ -95,7 +111,7 @@ process assembly {
 
 process assembly_size_filter {
 
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
@@ -111,7 +127,7 @@ process assembly_size_filter {
 
 process prokka {
 
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
@@ -129,7 +145,7 @@ process prokka {
 
 process quast {
 
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
