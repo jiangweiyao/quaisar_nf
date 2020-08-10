@@ -1,12 +1,41 @@
 #!/usr/bin/env nextflow
 
 
-Channel.fromFilePairs( params.in ).into { fastq_files; fastq_files2; fastq_files3 }
+Channel.fromFilePairs( params.in ).into { fastq_files; fastq_files2; fastq_files3; fastq_files4; fastq_files5  }
 abr_ref = file(params.abrdb)
 adapters = file(params.adapters)
 phix = file(params.phix)
 params.thread = 1
+mash_genome_db = file(params.genome_db)
+mash_plasmid_db = file(params.plasmid_db)
 
+println """\
+         Q U A I S A R - H NEXTFLOW PIPELINE   
+         ===================================
+         input read   : ${params.in}
+         outdir       : ${params.out}
+         ABR db       : ${params.abrdb}
+         adapters     : ${params.adapters}
+         size cutoff  : ${params.sizefilter}
+         """
+         .stripIndent()
+
+
+// Check if Mash reference file already exists. If not, download it.
+mash_genome_file = file("$baseDir/db/refseq.genomes.k21s1000.msh")
+if(!mash_genome_file.exists()){
+    println("Mash genome reference missing. Downloading...")
+    mash_genome_file = file('https://gembox.cbcb.umd.edu/mash/refseq.genomes.k21s1000.msh')
+    mash_genome_file.copyTo("$baseDir/db/refseq.genomes.k21s1000.msh")
+}
+
+// Check if Mash plasmid file already exists. If not, download it.
+mash_plasmid_file = file("$baseDir/db/refseq.plasmid.k21s1000.msh")
+if(!mash_plasmid_file.exists()){
+    println("Mash plasmid reference missing. Downloading...")
+    mash_plasmid_file = file('https://gembox.cbcb.umd.edu/mash/refseq.plasmid.k21s1000.msh')
+    mash_plasmid_file.copyTo("$baseDir/db/refseq.plasmid.k21s1000.msh")
+}
 
 process fastqc {
     
@@ -39,6 +68,44 @@ process multiqc {
     multiqc $reports
     """
 }
+
+process mash_screen_genome {
+
+    //errorStrategy 'ignore'
+    publishDir params.out, overwrite: true
+    maxForks 1
+
+    input:
+    tuple val(name), file(fastq) from fastq_files4
+
+    output:
+    path "*_pathogen_id.out" into mash_screen_genome_out
+
+    """
+    cat ${fastq[0]} ${fastq[1]} > combined.fastq.gz
+    mash screen -w ${mash_genome_db} combined.fastq.gz | sort -gr > ${name}_pathogen_id.out
+    """
+}
+
+
+/*
+process mash_screen_plasmid {
+
+    errorStrategy 'ignore'
+    publishDir params.out, overwrite: true
+
+    input:
+    tuple val(name), file(fastq) from fastq_files5
+
+    output:
+    path "*_plasmid_id.out" into mash_screen_plasmid_out
+
+    """
+    cat ${fastq[0]} ${fastq[1]} > combined.fastq.gz
+    mash screen -w ${mash_plasmid_db} combined.fastq.gz | sort -gr > ${name}_pathogen_id.out
+    """
+}
+*/
 
 process kma_index {
 
@@ -161,7 +228,7 @@ process quast {
 
 process busco {
 
-    //errorStrategy 'ignore'
+    errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
