@@ -158,8 +158,8 @@ process adapter_trimming {
     tuple val(name), file("*_clean{1,2}.fq.gz") into trimmed_fastq
 
     """
-    bbduk.sh -Xmx1g in1=${fastq[0]} in2=${fastq[1]} out1=int1.fq.gz out2=int2.fq.gz ref=${phix} k=31 hdist=1 
-    bbduk.sh -Xmx1g in1=int1.fq.gz in2=int2.fq.gz out1=${name}_clean1.fq.gz out2=${name}_clean2.fq.gz ref=${adapters} ktrim=r k=23 mink=11 hdist=1 tpe tbo
+    bbduk.sh -Xmx1g in1=${fastq[0]} in2=${fastq[1]} out1=int1.fq.gz out2=int2.fq.gz ref=${phix} k=31 hdist=1 t=1
+    bbduk.sh -Xmx1g in1=int1.fq.gz in2=int2.fq.gz out1=${name}_clean1.fq.gz out2=${name}_clean2.fq.gz ref=${adapters} ktrim=r k=23 mink=11 hdist=1 t=1 tpe tbo
     """
 }
 
