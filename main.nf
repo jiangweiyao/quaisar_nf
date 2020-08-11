@@ -10,13 +10,14 @@ mash_genome_db = file(params.genome_db)
 mash_plasmid_db = file(params.plasmid_db)
 
 println """\
-         Q U A I S A R - H NEXTFLOW PIPELINE   
-         ===================================
-         input read   : ${params.in}
-         outdir       : ${params.out}
-         ABR db       : ${params.abrdb}
-         adapters     : ${params.adapters}
-         size cutoff  : ${params.sizefilter}
+         Q U A I S A R - H     NEXTFLOW      PIPELINE   
+         =====================================================
+         input reads (--in)                  : ${params.in}
+         outdir (--out)                      : ${params.out}
+         Antibiotic Resistance DB (--abrdb)  : ${params.abrdb}
+         adapters (--adapters)               : ${params.adapters}
+         Mash Genome Reference (--genome_db) : ${params.genome_db}
+         size cutoff (--sizefilter)          : ${params.sizefilter}
          """
          .stripIndent()
 
@@ -72,8 +73,7 @@ process multiqc {
 process mash_screen_genome {
 
     //errorStrategy 'ignore'
-    publishDir params.out, overwrite: true
-    maxForks 1
+    publishDir params.out, mode: 'copy', overwrite: true
 
     input:
     tuple val(name), file(fastq) from fastq_files4
@@ -81,9 +81,15 @@ process mash_screen_genome {
     output:
     path "*_pathogen_id.out" into mash_screen_genome_out
 
+/*
     """
     cat ${fastq[0]} ${fastq[1]} > combined.fastq.gz
     mash screen -w ${mash_genome_db} combined.fastq.gz | sort -gr > ${name}_pathogen_id.out
+    """ 
+*/
+
+    """
+    cat ${fastq} | mash screen -w ${mash_genome_db} - | sort -gr > ${name}_pathogen_id.out
     """
 }
 
@@ -110,7 +116,7 @@ process mash_screen_plasmid {
 process kma_index {
 
     //errorStrategy 'ignore'
-    publishDir params.out, overwrite: true
+    //publishDir params.out, overwrite: true
 
     output:
     path "abr*" into kma_index_out
@@ -119,8 +125,6 @@ process kma_index {
     kma index -i ${abr_ref} -o abr
     """
 }
-
-//kma_index_out.print()
 
 process kma_map {
 
@@ -171,7 +175,7 @@ process assembly {
     tuple val(name), path("*_scaffolds.fasta") into assembly_output
 
     """
-    spades.py -1 ${fastq[0]} -2 ${fastq[1]} -o ${name} -m 6 -t ${params.thread}
+    spades.py -1 ${fastq[0]} -2 ${fastq[1]} -o ${name} -m 16 -t ${params.thread}
     cp ${name}/scaffolds.fasta ${name}_scaffolds.fasta
     """
 }
