@@ -1,18 +1,18 @@
 # QuAISAR Pipeline in Nextflow
 
-###This project is still undercontruction.
+### This project is still undercontruction.
 
-###Dependencies:
-1. [link to Nextflow](https://www.nextflow.io/)
-2. [link to Singularity](https://sylabs.io/docs/)
+### Dependencies:
+1. [Nextflow](https://www.nextflow.io/)
+2. [Singularity](https://sylabs.io/docs/)
 
-###Usage: 
-Test pipeline with prepackaged data:
+### Usage: 
+Test the full pipeline with prepackaged data:
 ```
 nextflow run quaisar_nf/main.nf -c quaisar_nf/nextflow.config
 ```
 
-Use the configuration file to run on the SGE system in SCBS
+Use the alternative configuration file to run on the SGE system in SCBS
 ```
 nextflow run quaisar_nf/main.nf -c quaisar_nf/nextflow_sge.config
 ```
@@ -22,7 +22,7 @@ Test the shorter KPIP pipeline
 nextflow run quaisar_nf/kpip.nf -c quaisar_nf/nextflow.config
 ```
 
-Use the configuration file to run the shorter KPIP pipeline on the SGE system in SCBS
+Use the alternative configuration file to run the shorter KPIP pipeline on the SGE system in SCBS
 ```
 nextflow run quaisar_nf/kpip.nf -c quaisar_nf/nextflow_sge.config
 ```
