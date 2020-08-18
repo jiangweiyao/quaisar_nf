@@ -9,6 +9,8 @@ params.thread = 1
 mash_genome_db = file(params.genome_db)
 mash_plasmid_db = file(params.plasmid_db)
 
+busco_config = file("$baseDir/db/busco_config.ini")
+
 println """\
          Q U A I S A R - H     NEXTFLOW      PIPELINE   
          =====================================================
@@ -189,10 +191,26 @@ process assembly_size_filter {
     tuple val(name), file(assembly) from assembly_output
 
     output:
-    tuple val(name), path("*_scaffolds_filtered.fasta") into assembly_filter_output, assembly_filter_output2, assembly_filter_output3
+    tuple val(name), path("*_scaffolds_filtered.fasta") into assembly_filter_output, assembly_filter_output2, assembly_filter_output3, assembly_filter_output4
 
     """
     reformat.sh in=${assembly} out=${assembly.simpleName}_filtered.fasta minlength=${params.sizefilter}
+    """
+}
+
+process mlst {
+
+    //errorStrategy 'ignore'
+    publishDir params.out, mode: 'copy', overwrite: true
+
+    input:
+    tuple val(name), file(assembly) from assembly_filter_output4
+
+    output:
+    tuple val(name), path("*.mlst") into mlst_output
+
+    """
+    mlst ${assembly} > ${name}.mlst
     """
 }
 
@@ -242,7 +260,7 @@ process busco {
     path("*") into busco_output
 
     """
-    busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly}
+    busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly} --config ${busco_config}
     """
 }
 
