@@ -1,15 +1,18 @@
 #!/usr/bin/env nextflow
 
 
-Channel.fromFilePairs( params.in ).into { fastq_files; fastq_files2; fastq_files3; fastq_files4; fastq_files5  }
+Channel.fromFilePairs( params.in ).into { fastq_files; fastq_files2; fastq_files3; fastq_files4; fastq_files5; fastq_files6; fastq_files7  }
 abr_ref = file(params.abrdb)
+plasmid_db = file(params.plasmid_db)
 adapters = file(params.adapters)
 phix = file(params.phix)
 params.thread = 1
 mash_genome_db = file(params.genome_db)
 mash_plasmid_db = file(params.plasmid_db)
+kraken_db = file(params.kraken_db)
 
 busco_config = file("$baseDir/db/busco_config.ini")
+
 
 println """\
          Q U A I S A R - H     NEXTFLOW      PIPELINE   
@@ -38,6 +41,17 @@ if(!mash_plasmid_file.exists()){
     println("Mash plasmid reference missing. Downloading...")
     mash_plasmid_file = file('https://gembox.cbcb.umd.edu/mash/refseq.plasmid.k21s1000.msh')
     mash_plasmid_file.copyTo("$baseDir/db/refseq.plasmid.k21s1000.msh")
+}
+
+// Check if kraken2 library already exists. If not, download it.
+kraken_hash_file = file("$baseDir/db/minikraken2_v2_8GB_201904_UPDATE/hash.k2d")
+if(!kraken_hash_file.exists()){
+    println("Kraken library missing. Downloading...")
+    //kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz')
+    kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/16S_Greengenes13.5_20200326.tgz')
+    kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
+    println "echo untarring tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
+    println "tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz --directory ${baseDir}/db/".execute().text
 }
 
 process fastqc {
@@ -83,62 +97,69 @@ process mash_screen_genome {
     output:
     path "*_pathogen_id.out" into mash_screen_genome_out
 
-/*
-    """
-    cat ${fastq[0]} ${fastq[1]} > combined.fastq.gz
-    mash screen -w ${mash_genome_db} combined.fastq.gz | sort -gr > ${name}_pathogen_id.out
-    """ 
-*/
-
     """
     cat ${fastq} | mash screen -w ${mash_genome_db} - | sort -gr > ${name}_pathogen_id.out
     """
 }
 
 
-/*
-process mash_screen_plasmid {
+process kraken_fastq {
 
-    errorStrategy 'ignore'
-    publishDir params.out, overwrite: true
+    //errorStrategy 'ignore'
+    publishDir params.out, mode: 'copy', overwrite: true
 
     input:
-    tuple val(name), file(fastq) from fastq_files5
+    tuple val(name), file(fastq) from fastq_files7
 
     output:
-    path "*_plasmid_id.out" into mash_screen_plasmid_out
+    tuple val(name), file("*.{summary,output}") into kraken_fastq_out
 
     """
-    cat ${fastq[0]} ${fastq[1]} > combined.fastq.gz
-    mash screen -w ${mash_plasmid_db} combined.fastq.gz | sort -gr > ${name}_pathogen_id.out
+    kraken2 --db ${kraken_db} --paired ${fastq} --memory-mapping --report ${name}_reads.summary --output ${name}_reads.output
     """
 }
-*/
 
-process kma_index {
+process krona_fastq {
+
+    //errorStrategy 'ignore'
+    publishDir params.out, mode: 'copy', overwrite: true
+
+    input:
+    tuple val(name), file(kraken_result) from kraken_fastq_out
+
+    output:
+    path "*.html" into krona_fastq_output
+
+    """
+    ktImportTaxonomy -q 2 -t 3 ${kraken_result[0]} -o ${name}_read.html
+    """
+}
+
+
+process kma_index_abr {
 
     //errorStrategy 'ignore'
     //publishDir params.out, overwrite: true
 
     output:
-    path "abr*" into kma_index_out
+    path "abr*" into kma_index_abr_out
 
     """
     kma index -i ${abr_ref} -o abr
     """
 }
 
-process kma_map {
+process kma_map_abr {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
 
     input:
-    path index from kma_index_out
-    tuple val(name), file(fastq) from fastq_files2
+    path index from kma_index_abr_out
+    tuple val(name), file(fastq) from fastq_files6
 
     output:
-    path "*_abr*" into kma_out
+    path "*_abr*" into kma_abr_out
 
     //kma -i ${fastq[0]} -ipe ${fastq[1]} -o ${name}_abr.out -t_db abr -1t1
 
@@ -147,6 +168,41 @@ process kma_map {
     kma -ipe ${fastq} -o ${name}_abr -t_db abr -1t1
     """
 }
+
+
+process kma_index_plasmid {
+
+    //errorStrategy 'ignore'
+    //publishDir params.out, overwrite: true
+
+    output:
+    path "plasmid*" into kma_index_plasmid_out
+
+    """
+    kma index -i ${plasmid_db} -o plasmid
+    """
+}
+
+process kma_map_plasmid {
+
+    //errorStrategy 'ignore'
+    publishDir params.out, mode: 'copy', overwrite: true
+
+    input:
+    path index from kma_index_plasmid_out
+    tuple val(name), file(fastq) from fastq_files2
+
+    output:
+    path "*_plasmid*" into kma_plasmid_out
+
+    //kma -i ${fastq[0]} -ipe ${fastq[1]} -o ${name}_plasmid.out -t_db plasmid -1t1
+
+
+    """
+    kma -ipe ${fastq} -o ${name}_plasmid -t_db plasmid -1t1
+    """
+}
+
 
 process adapter_trimming {
 
@@ -191,12 +247,45 @@ process assembly_size_filter {
     tuple val(name), file(assembly) from assembly_output
 
     output:
-    tuple val(name), path("*_scaffolds_filtered.fasta") into assembly_filter_output, assembly_filter_output2, assembly_filter_output3, assembly_filter_output4
+    tuple val(name), path("*_scaffolds_filtered.fasta") into assembly_filter_output, assembly_filter_output2, assembly_filter_output3, assembly_filter_output4, assembly_filter_output5
 
     """
     reformat.sh in=${assembly} out=${assembly.simpleName}_filtered.fasta minlength=${params.sizefilter}
     """
 }
+
+process kraken_assembly {
+
+    //errorStrategy 'ignore'
+    publishDir params.out, mode: 'copy', overwrite: true
+
+    input:
+    tuple val(name), file(assembly) from assembly_filter_output5
+
+    output:
+    tuple val(name), file("*.{summary,output}") into kraken_assembly_out
+
+    """
+    kraken2 --db ${kraken_db} ${assembly} --memory-mapping --report ${name}_assembly.summary --output ${name}_assembly.output
+    """
+}
+
+process krona_assembly {
+
+    //errorStrategy 'ignore'
+    publishDir params.out, mode: 'copy', overwrite: true
+
+    input:
+    tuple val(name), file(kraken_result) from kraken_assembly_out
+
+    output:
+    path "*.html" into krona_assembly_output
+
+    """
+    ktImportTaxonomy -q 2 -t 3 ${kraken_result[0]} -o ${name}_assembly.html
+    """
+}
+
 
 process mlst {
 

@@ -7,7 +7,7 @@ params.phix = "$baseDir/db/phix.fasta"
 params.genome_db = "$baseDir/db/refseq.genomes.k21s1000.msh"
 params.plasmid_db = "$baseDir/db/refseq.plasmid.k21s1000.msh"
 params.plasmid_db = "$baseDir/db/plasmid_all.fsa"
-params.kraken_db = "$baseDir/db/minikraken2_v2_8GB_201904_UPDATE"
+
 
 process {
   withName:fastqc {
@@ -34,17 +34,23 @@ process {
   withName:busco {
     container = 'ezlabgva/busco:v4.1.1_cv1'
   }
-  withName:'kma.*' {
+  withName:kma_index_abr {
     container = 'quay.io/biocontainers/kma:1.3.2--hed695b0_0'
   }
-  withName:'mash.*' {
+  withName:kma_map_abr {
+    container = 'quay.io/biocontainers/kma:1.3.2--hed695b0_0'
+  }
+  withName:kma_index_plasmid {
+    container = 'quay.io/biocontainers/kma:1.3.2--hed695b0_0'
+  }
+  withName:kma_map_plasmid {
+    container = 'quay.io/biocontainers/kma:1.3.2--hed695b0_0'
+  } 
+  withName:mash_screen_genome {
     container = 'quay.io/biocontainers/mash:2.2.2--ha61e061_2'
   } 
-  withName:'kraken.*' {
-    container = 'quay.io/biocontainers/kraken2:2.0.9beta--pl526hc9558a2_0'
-  } 
-  withName:'krona.*' {
-    container = 'biocontainers/krona:v2.7.1_cv1'
+  withName:mash_screen_plasmid {
+    container = 'quay.io/biocontainers/mash:2.2.2--ha61e061_2'
   }
   withName:mlst {
     container = 'quay.io/biocontainers/mlst:2.19.0--0'
