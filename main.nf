@@ -117,7 +117,7 @@ process tabulate_mash_genome {
     path "*_pathogen_id.out1" into tabulate_mash_genome_out
 
     """
-    ${mash_parser} -i ${table} -o ${name}_pathogen_id.out1
+    python3 ${mash_parser} -i ${table} -o ${name}_pathogen_id.out1
     """
 }
 
@@ -199,7 +199,7 @@ process tabulate_kma_abr {
     path "*_abr.out1" into tabulate_kma_abr_out
 
     """
-    ${kma_parser} -i ${table[3]} -o ${name}_abr.out1
+    python3 ${kma_parser} -i ${table[3]} -o ${name}_abr.out1
     """
 }
 
@@ -246,7 +246,7 @@ process tabulate_kma_plasmid {
     path "*_plasmid.out1" into tabulate_kma_plasmid_out
 
     """
-    ${kma_parser} -i ${table[3]} -o ${name}_plasmid.out1
+    python3 ${kma_parser} -i ${table[3]} -o ${name}_plasmid.out1
     """
 }
 
