@@ -8,7 +8,6 @@ adapters = file(params.adapters)
 phix = file(params.phix)
 params.thread = 1
 mash_genome_db = file(params.genome_db)
-mash_plasmid_db = file(params.plasmid_db)
 kraken_db = file(params.kraken_db)
 
 busco_config = file("$baseDir/db/busco_config.ini")
@@ -24,6 +23,9 @@ println """\
          adapters (--adapters)               : ${params.adapters}
          Mash Genome Reference (--genome_db) : ${params.genome_db}
          size cutoff (--sizefilter)          : ${params.sizefilter}
+         Plasmid Database (--plasmid_db)     : ${params.plasmid_db}
+         Kraken Database (--kraken_db)       : ${params.kraken_db}
+
          """
          .stripIndent()
 
@@ -36,23 +38,15 @@ if(!mash_genome_file.exists()){
     mash_genome_file.copyTo("$baseDir/db/refseq.genomes.k21s1000.msh")
 }
 
-// Check if Mash plasmid file already exists. If not, download it.
-mash_plasmid_file = file("$baseDir/db/refseq.plasmid.k21s1000.msh")
-if(!mash_plasmid_file.exists()){
-    println("Mash plasmid reference missing. Downloading...")
-    mash_plasmid_file = file('https://gembox.cbcb.umd.edu/mash/refseq.plasmid.k21s1000.msh')
-    mash_plasmid_file.copyTo("$baseDir/db/refseq.plasmid.k21s1000.msh")
-}
-
 // Check if kraken2 library already exists. If not, download it.
 kraken_hash_file = file("$baseDir/db/minikraken2_v2_8GB_201904_UPDATE/hash.k2d")
 if(!kraken_hash_file.exists()){
     println("Kraken library missing. Downloading...")
-    //kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz')
+    kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz')
     //kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/16S_Greengenes13.5_20200326.tgz')
-    //kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
-    println "wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
-    println "echo untarring tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
+    kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
+    //println "wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
+    //println "echo untarring tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
     println "tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz --directory ${baseDir}/db/".execute().text
     println "rm -f ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
 }
