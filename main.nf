@@ -114,6 +114,8 @@ process mash_screen_genome {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
+    memory '8 GB'   
+
 
     input:
     tuple val(name), file(fastq) from fastq_files4
@@ -146,6 +148,7 @@ process kraken_fastq {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
+    memory '8 GB'
 
     input:
     tuple val(name), file(fastq) from fastq_files7
@@ -293,6 +296,7 @@ process assembly {
 
     //errorStrategy 'ignore'
     //publishDir params.out, mode: 'copy', overwrite: true
+    memory '8 GB'
 
     input:
     tuple val(name), file(fastq) from trimmed_fastq
@@ -326,6 +330,7 @@ process kraken_assembly {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
+    memory '8 GB'
 
     input:
     tuple val(name), file(assembly) from assembly_filter_output5
