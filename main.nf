@@ -294,7 +294,7 @@ process assembly {
 
     //errorStrategy 'ignore'
     //publishDir params.out, mode: 'copy', overwrite: true
-    memory '8 GB'
+    memory '16 GB'
 
     input:
     tuple val(name), file(fastq) from trimmed_fastq
@@ -412,6 +412,7 @@ process busco {
 
     errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
+    memory '8 GB'
 
     input:
     tuple val(name), file(assembly) from assembly_filter_output3
