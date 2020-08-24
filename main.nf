@@ -43,7 +43,6 @@ kraken_hash_file = file("$baseDir/db/minikraken2_v2_8GB_201904_UPDATE/hash.k2d")
 if(!kraken_hash_file.exists()){
     println("Kraken library missing. Downloading...")
     kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz')
-    //kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/16S_Greengenes13.5_20200326.tgz')
     kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
     //println "wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
     //println "echo untarring tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
@@ -65,11 +64,10 @@ if(!mash_genome_file.exists()){
 kraken_hash_file = file("$baseDir/db/minikraken2_v2_8GB_201904_UPDATE/hash.k2d")
 if(!kraken_hash_file.exists()){
     println("Kraken library missing. Downloading...")
-    //kraken_file = file('ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz')
-    //kraken_file = file('ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/16S_Greengenes13.5_20200326.tgz')
-    //kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
-    println "wget ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
-    println "wget -c ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
+    kraken_file = file('ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz')
+    kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
+    //println "wget ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
+    //println "wget -c ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
     //println "echo untarring tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
     println "tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz --directory ${baseDir}/db/".execute().text
     println "rm -f ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
