@@ -71,6 +71,7 @@ process mash_screen_genome {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
+    memory '8 GB'
 
     input:
     tuple val(name), file(fastq) from fastq_files4
