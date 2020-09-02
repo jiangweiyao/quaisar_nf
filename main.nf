@@ -421,7 +421,7 @@ process busco {
     path("*") into busco_output
 
     """
-    busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly} --config ${busco_config}
+    busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly} --config ${busco_config} -c 1
     """
 }
 
