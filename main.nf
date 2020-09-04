@@ -119,10 +119,10 @@ process mash_screen_genome {
     tuple val(name), file(fastq) from fastq_files4
 
     output:
-    tuple val(name), path("*_pathogen_id.out") into mash_screen_genome_out
+    tuple val(name), path("*_pathogen_id_raw.out") into mash_screen_genome_out
 
     """
-    cat ${fastq} | mash screen -w ${mash_genome_db} - | sort -gr > ${name}_pathogen_id.out
+    cat ${fastq} | mash screen -w ${mash_genome_db} - | sort -gr > ${name}_pathogen_id_raw.out
     """
 }
 
@@ -135,10 +135,10 @@ process tabulate_mash_genome {
     tuple val(name), file(table) from mash_screen_genome_out
 
     output:
-    path "*_pathogen_id.out1" into tabulate_mash_genome_out
+    path "*_pathogen_id.out" into tabulate_mash_genome_out
 
     """
-    python3 ${mash_parser} -i ${table} -o ${name}_pathogen_id.out1
+    python3 ${mash_parser} -i ${table} -o ${name}_pathogen_id.out
     """
 }
 
@@ -218,10 +218,10 @@ process tabulate_kma_abr {
     tuple val(name), file(table) from kma_abr_out
 
     output:
-    path "*_abr.out1" into tabulate_kma_abr_out
+    path "*_abr.out" into tabulate_kma_abr_out
 
     """
-    python3 ${kma_parser} -i ${table[3]} -o ${name}_abr.out1
+    python3 ${kma_parser} -i ${table[3]} -o ${name}_abr.out
     """
 }
 
@@ -265,10 +265,10 @@ process tabulate_kma_plasmid {
     tuple val(name), file(table) from kma_plasmid_out
 
     output:
-    path "*_plasmid.out1" into tabulate_kma_plasmid_out
+    path "*_plasmid.out" into tabulate_kma_plasmid_out
 
     """
-    python3 ${kma_parser} -i ${table[3]} -o ${name}_plasmid.out1
+    python3 ${kma_parser} -i ${table[3]} -o ${name}_plasmid.out
     """
 }
 
