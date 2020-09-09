@@ -145,7 +145,11 @@ process kraken_fastq {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
-    memory '8 GB'
+    errorStrategy  { task.attempt <= maxRetries  ? 'retry' : 'finish' }
+    maxRetries 3
+
+    memory { 4.GB * task.attempt * task.attempt }
+
 
     input:
     tuple val(name), file(fastq) from fastq_files7
@@ -154,7 +158,7 @@ process kraken_fastq {
     tuple val(name), file("*.{summary,output}") into kraken_fastq_out
 
     """
-    kraken2 --db ${kraken_db} --paired ${fastq} --memory-mapping --report ${name}_reads.summary --output ${name}_reads.output
+    kraken2 --db ${kraken_db} --paired ${fastq} --report ${name}_reads.summary --output ${name}_reads.output
     """
 }
 
@@ -331,7 +335,10 @@ process kraken_assembly {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
-    memory '8 GB'
+    errorStrategy  { task.attempt <= maxRetries  ? 'retry' : 'finish' }
+    maxRetries 3
+
+    memory { 4.GB * task.attempt * task.attempt }
 
     input:
     tuple val(name), file(assembly) from assembly_filter_output5
