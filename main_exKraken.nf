@@ -422,7 +422,7 @@ process busco {
     tuple val(name), file(assembly) from assembly_filter_output3
 
     output:
-    path("*") into busco_output
+    path("*/short_summary*.txt") into busco_output
 
     """
     busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly} --config ${busco_config} -c 1

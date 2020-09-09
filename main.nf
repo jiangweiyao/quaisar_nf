@@ -64,11 +64,10 @@ if(!mash_genome_file.exists()){
 kraken_hash_file = file("$baseDir/db/minikraken2_v2_8GB_201904_UPDATE/hash.k2d")
 if(!kraken_hash_file.exists()){
     println("Kraken library missing. Downloading...")
-    kraken_file = file('ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz')
-    kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
-    //println "wget ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
-    //println "wget -c ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz -P ${baseDir}/db/".execute().text
-    //println "echo untarring tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
+//    kraken_file = file('ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz')
+//    kraken_file.copyTo("${baseDir}/db/minikraken2_v2_8GB_201904.tgz")
+    println "curl ftp://ftp.cdc.gov/pub/SCBS2/minikraken2_v2_8GB_201904.tgz --output ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
+    println "echo untarring tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
     println "tar -zxf ${baseDir}/db/minikraken2_v2_8GB_201904.tgz --directory ${baseDir}/db/".execute().text
     println "rm -f ${baseDir}/db/minikraken2_v2_8GB_201904.tgz".execute().text
 }
@@ -294,7 +293,11 @@ process assembly {
 
     //errorStrategy 'ignore'
     //publishDir params.out, mode: 'copy', overwrite: true
-    memory '16 GB'
+
+    errorStrategy  { task.attempt <= maxRetries  ? 'retry' : 'finish' }
+    maxRetries 3
+
+    memory { 4.GB * task.attempt * task.attempt }
 
     input:
     tuple val(name), file(fastq) from trimmed_fastq
@@ -303,7 +306,7 @@ process assembly {
     tuple val(name), path("*_scaffolds.fasta") into assembly_output
 
     """
-    spades.py -1 ${fastq[0]} -2 ${fastq[1]} -o ${name} -m 16 -t ${params.thread}
+    spades.py -1 ${fastq[0]} -2 ${fastq[1]} -o ${name} -t ${params.thread}
     cp ${name}/scaffolds.fasta ${name}_scaffolds.fasta
     """
 }
@@ -418,7 +421,7 @@ process busco {
     tuple val(name), file(assembly) from assembly_filter_output3
 
     output:
-    path("*") into busco_output
+    path("*/short_summary*.txt") into busco_output
 
     """
     busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly} --config ${busco_config} -c 1
