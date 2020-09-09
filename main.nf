@@ -10,7 +10,6 @@ params.thread = 1
 mash_genome_db = file(params.genome_db)
 kraken_db = file(params.kraken_db)
 
-busco_config = file("$baseDir/db/busco_config.ini")
 mash_parser = file("$baseDir/bin/mash_screen_parser.py")
 kma_parser = file("$baseDir/bin/kma_screen_parser.py")
 
@@ -431,7 +430,7 @@ process busco {
     path("*/short_summary*.txt") into busco_output
 
     """
-    busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly} --config ${busco_config} -c 1
+    busco --auto-lineage-prok -f -m geno -o ${name}_busco -i ${assembly} -c 1
     """
 }
 
