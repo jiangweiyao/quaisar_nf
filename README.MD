@@ -54,4 +54,4 @@ nextflow run quaisar_nf/filepair_finder.nf --in='./quaisar_nf/fastq/*{1,2}.fastq
 ```
 
 ### Common problems
-This workflow will dynamically download the docker images for the processes and the large reference files at first running. Network interruptions or firewalls can block the download. We recommend running the workflow with the include file the first time you run this workflow to download everything. If a docker image pull is unsuccessful, try resuming the run again to see if the docker image can be downloaded successfully. 
+This workflow will dynamically download the docker images for the processes and the large reference files at first running. Network interruptions or firewalls can block the download. We recommend running the workflow with the include file the first time you run this workflow to download everything. If a docker image pull is unsuccessful, try resuming the run again to see if the docker image can be downloaded successfully. Try
