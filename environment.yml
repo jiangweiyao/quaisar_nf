@@ -19,4 +19,4 @@ dependencies:
   - krona
   - mlst
   - roary
-  - raxmlng
+  - raxml-ng
