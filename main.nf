@@ -300,7 +300,8 @@ process assembly {
     errorStrategy  { task.attempt <= maxRetries  ? 'retry' : 'ignore' }
     maxRetries 3
 
-    memory { 4.GB * task.attempt * task.attempt }
+    memory { 4.GB * params.thread * task.attempt * task.attempt }
+    cpus params.thread
 
     input:
     tuple val(name), file(fastq) from trimmed_fastq
@@ -387,6 +388,8 @@ process prokka {
 
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
+    
+    cpus params.threads
 
     input:
     tuple val(name), file(assembly) from assembly_filter_output
