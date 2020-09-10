@@ -1,0 +1,22 @@
+name: quaisar_coregenome
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - pandas
+  - tabulate
+  - fastqc
+  - multiqc
+  - bbmap
+  - spades
+  - prokka
+  - quast
+  - busco
+  - kma
+  - mash
+  - kraken2
+  - krona
+  - mlst
+  - roary
+  - raxmlng
