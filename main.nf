@@ -389,7 +389,7 @@ process prokka {
     //errorStrategy 'ignore'
     publishDir params.out, mode: 'copy', overwrite: true
     
-    cpus params.threads
+    cpus params.thread
 
     input:
     tuple val(name), file(assembly) from assembly_filter_output
